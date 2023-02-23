@@ -1,14 +1,21 @@
-import express, { Application, Request, Response } from "express";
-
+import express, { Application } from "express";
+import dotenv from 'dotenv';
+import errorMiddleware from "./middleware/error.middleware";
+import userRouter from "./routes/user.routes";
 
 const app: Application = express();
-const port: number = 3000;
+
+//Enviorment variable
+dotenv.config();
+
+app.use(express.json());
+
+app.use("/api/v1/user", userRouter);
 
 
-app.get("/", function (req: Request, res: Response): Response {
-    return res.send("Server Running");
-});
+//Error Middleware
+app.use(errorMiddleware);
 
-app.listen(port, () => {
-    console.log(`Server Running On The Port ${port}`);
+app.listen(process.env.PORT, () => {
+    console.log(`Server Running On The Port ${process.env.PORT}`);
 });
