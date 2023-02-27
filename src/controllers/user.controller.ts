@@ -1,16 +1,43 @@
 import { NextFunction, Response, Request } from 'express';
 import ErrorHandler from '../config/customErrorHandler';
+import User from '../models/user.model';
 
 class UserController {
-    register(req: Request, res: Response, next: NextFunction) {
-        const { name, email, password } = req.body;
-        if (!req.body || (!name || !email || !password)) return next(new ErrorHandler("All fields Required", 400));
+    async register(req: Request, res: Response, next: NextFunction): Promise<Response | any> {
+        const { name, username, email, password } = req.body;
+        if (!req.body || (!name || !email || !password || !username)) return next(new ErrorHandler("All fields Required", 400));
 
-        return res.json({
-            sucess: true,
-            message: "Users Added"
-        });
+        try {
+            const user = await User.findOne({ email: email });
+            if (user) return next(new ErrorHandler("User Already Exists", 400));
+            const newUser = await User.create({
+                name,
+                username,
+                email,
+                password,
+            });
+            res.status(201).json({
+                success: true,
+                user: newUser,
+            })
+        } catch (error: any) { return next(new ErrorHandler(error.message, 400)) }
+    }
 
+    async login(req: Request, res: Response, next: NextFunction): Promise<Response | any> {
+        const { email, password } = req.body;
+        if (!req.body || (!email || !password)) return next(new ErrorHandler("All fields Required", 400));
+
+        try {
+            const user = await User.findOne({ email: email });
+            if (!user) return next(new ErrorHandler("Email Or Password Incorrect", 400));
+            if (user.verifyPassword(password)) {
+                res.json({
+                    success: true,
+                    user
+                });
+            }
+            else return next(new ErrorHandler("Email Or Password Incorrect", 400));
+        } catch (error: any) { return next(new ErrorHandler(error.message, 400)) }
     }
 }
 
