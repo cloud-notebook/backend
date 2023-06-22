@@ -5,5 +5,6 @@ node_modules
 #Build Folder
 dist
 
-
+#logs File
+logs
 
