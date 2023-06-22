@@ -1,14 +1,9 @@
 import { Schema, model } from "mongoose";
 import bcrypt from 'bcrypt';
 
-export interface IUser {
-    name: string,
-    username: string,
-    email: string,
-    password: string
-}
 
-const UserSchema: Schema = new Schema<IUser>({
+
+const UserSchema: Schema = new Schema({
     name: { type: String, required: true },
     username: { type: String, required: true, trim: true, lowercase: true },
     email: { type: String, required: true, trim: true, unique: true },
