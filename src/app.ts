@@ -10,6 +10,7 @@ import logger from "./config/logger";
 import morganMiddleware from "./middleware/morgan.middleware";
 import socket from "socket.io";
 import ErrorHandler from "./config/customErrorHandler";
+import cors from 'cors';
 
 
 const app: Application = express();
@@ -27,6 +28,9 @@ Connect().catch((e: any) => {
 
 //morgan middleware
 app.use(morganMiddleware);
+
+//CORS
+app.use(cors());
 
 //Endpoints
 app.use("/api/v1/auth", authController);
@@ -48,7 +52,11 @@ const server = app.listen(process.env.PORT, () => {
     logger.info(`Server Running on port ${process.env.PORT}`);
 });
 
-const io = new socket.Server(server);
+const io = new socket.Server(server, {
+    cors: {
+        origin: "*"
+    }
+});
 
 io.on("connection", (socket) => {
 
