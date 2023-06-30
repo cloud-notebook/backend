@@ -12,27 +12,33 @@ export const accessChat = async (req: Request, res: Response, next: NextFunction
 
         if (!userId) return next(new ErrorHandler("User ID not found", 404));
 
-        const isChat = await Chat.find({
-            $and: [{ users: { $elemMatch: { $eq: userId } } },
-            { users: { $elemMatch: { $eq: user._id } } }]
-        });
+        let chat = await Chat.findOne({ users: { $elemMatch: { $eq: userId } } });
 
-        if (isChat) {
-            res.status(200).json(isChat);
-            return;
-        }
-        const chat = new Chat({
-            chatName: 'sender',
+        if (chat) return next(new ErrorHandler("You are already in a chat", 400));
+
+        chat = await Chat.create({
             users: [user._id, userId],
         });
-        const createChat = await chat.save();
-        const fullChat = await Chat.findById(createChat._id).populate("users", '-password');
-        return res.status(200).json(fullChat);
+        res.status(200).json(chat);
     }
     catch (e: any) {
         return next(new ErrorHandler(e.message, 404));
     }
 }
 
-
+export const allChats = async (req: Request, res: Response, next: NextFunction): Promise<void | Response> => {
+    try {
+        const user = await req.body.user;
+        const chats = await Chat.find({
+            users: { $elemMatch: { $eq: user._id } }
+        }).populate('lastMessage');
+        res.status(200).json({
+            success: true,
+            chats
+        });
+    }
+    catch (e: any) {
+        return next(new ErrorHandler(e.message, 404));
+    }
+}
 
