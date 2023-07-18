@@ -3,7 +3,7 @@ import ErrorHandler from "../config/customErrorHandler";
 import Rating from "../entities/Rating";
 
 
-class RatingService {
+export class RatingService {
 
 
     addRating = async (req: Request, res: Response, next: NextFunction) => {
@@ -11,19 +11,24 @@ class RatingService {
             const { _id } = req.body.user;
             const { noteId, comment, star } = req.body;
 
-            const rating = await Rating.findOne({ noteId, userId: _id });
+            const rating = await Rating.findOne({ note: noteId, user: _id });
 
             if (rating) {
                 return next(new ErrorHandler("You already rated this note", 400))
             }
 
             const newRating = await Rating.create({
-                noteId,
-                userId: _id,
+                note: noteId,
+                user: _id,
                 comment,
                 star
             })
 
+
+            res.status(200).json({
+                success: true,
+                rating: newRating
+            })
 
 
         } catch (error: any) {
@@ -34,10 +39,10 @@ class RatingService {
     getRating = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { noteId } = req.params;
-            const rating = await Rating.find({ noteId });
+            const ratings = await Rating.find({ note: noteId }).populate("user", "-password").populate("note");
             res.status(200).json({
                 success: true,
-                rating
+                ratings
             })
         } catch (error: any) {
             return next(new ErrorHandler(error.message, 404))
@@ -48,7 +53,7 @@ class RatingService {
     deleteRating = async (req: Request, res: Response, next: NextFunction) => {
         try {
 
-            const rating = await Rating.findOne({ _id: req.params.id })
+            const rating = await Rating.findOne({ _id: req.params.noteId })
 
             if (!rating) return next(new ErrorHandler("Rating not found", 404))
 

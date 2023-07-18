@@ -21,12 +21,14 @@ const noteSchema = new Schema({
     },
     user: {
         type: Types.ObjectId,
-        ref: 'user'
+        ref: 'User'
     },
     isPublic: {
         type: Boolean,
         default: false
     }
 }, { timestamps: true });
+
+noteSchema.index({ title: 'text', description: 'text' });
 
 export default model('Note', noteSchema);

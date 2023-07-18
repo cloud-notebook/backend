@@ -5,6 +5,9 @@ import authController from "./controllers/auth.controller";
 import noteController from "./controllers/note.controller";
 import messageController from "./controllers/message.controller";
 import chatController from "./controllers/chat.controller";
+import userController from './controllers/user.controller';
+import ratingController from './controllers/rating.controller';
+import dashboardController from './controllers/dashboard.controller';
 import Connect from "./config/database.config";
 import logger from "./config/logger";
 import morganMiddleware from "./middleware/morgan.middleware";
@@ -37,6 +40,9 @@ app.use("/api/v1/auth", authController);
 app.use("/api/v1/note", noteController);
 app.use("/api/v1/chat", chatController);
 app.use("/api/v1/message", messageController);
+app.use("/api/v1/user", userController);
+app.use("/api/v1/rating", ratingController);
+app.use("/api/v1/dashboard", dashboardController);
 
 
 
@@ -66,7 +72,6 @@ io.on("connection", (socket) => {
 
 
     socket.on("sendMessage", (message) => {
-        // Don't send Back to the sender of the message
         const { chat, sender } = message;
         const { users } = chat;
         users.forEach((user: any) => {

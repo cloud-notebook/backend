@@ -106,7 +106,7 @@ export class NoteService {
 
     async getNote(req: Request, res: Response, next: NextFunction) {
         try {
-            const { _id } = await req.body.user;
+            // const { _id } = await req.body.user;
 
             const note = await Note.findById(req.params.id);
 
@@ -123,10 +123,19 @@ export class NoteService {
 
     publicNote = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const notes = await Note.find({ isPublic: true }).populate('user', '-password')
+
+            const page: number = Number(req.query.page) || 1;
+            const limit: number = Number(req.query.limit) || 10;
+
+            const totalItem = await Note.find({ isPublic: true }).count();
+
+            const totalPage = Math.ceil(totalItem / limit);
+            const notes = await Note.find({ isPublic: true }).populate('user', '-password').skip((page - 1) * limit).limit(limit);
             res.json({
                 success: true,
-                notes
+                notes,
+                totalPage,
+                currentPage: page
             })
         }
 
@@ -138,17 +147,34 @@ export class NoteService {
     async searchNote(req: Request, res: Response, next: NextFunction) {
         try {
             const { s } = req.query;
+            const page: number = Number(req.query.page) || 1;
+            const limit: number = Number(req.query.limit) || 10;
 
-            // @ts-ignore
-            const notes = await Note.find({ $text: { "$search": s } }).populate('user');
+            if (!s || typeof s !== 'string') {
+                return res.json({
+                    success: false,
+                    error: 'Invalid search query',
+                });
+            }
+
+            const totalItem: number = await Note.find({ $text: { $search: s } }).countDocuments();
+            console.log(`totalItem is ${totalItem}`);
+            const totalPage: number = Math.ceil(totalItem / limit);
+
+            const notes = await Note.find({ $text: { $search: s } })
+                .populate('user', 'username') // Assuming you want to populate the 'user' field with the 'username' property only
+                .skip((page - 1) * limit)
+                .limit(limit);
+
             res.json({
                 success: true,
-                notes
-            })
-        }
-        catch (e: any) {
-            return next(new ErrorHandler(e.message, 404))
+                notes,
+                totalPage,
+                currentPage: page,
+            });
+        } catch (e: any) {
+            return next(new ErrorHandler(e.message, 404));
         }
     }
-
 }
+

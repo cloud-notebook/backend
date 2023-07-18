@@ -1,20 +1,16 @@
-import { connect, connection, set } from "mongoose";
+import mongoose, { set } from "mongoose";
 import logger from "./logger";
 
 
 export default async function (): Promise<void> {
     set("strictQuery", false);
     try {
-        await connect("mongodb://0.0.0.0:27017/university-project-notebook", function () {
-            logger.info("Databse Connected");
-        });
-        connection.on("connected", function (db) {
-
-        })
-        connection.on("error", console.error.bind(console, "Connection Error"));
+        await mongoose.connect("mongodb+srv://shami:AliAli12@notebook.wrjlx8b.mongodb.net/Notebook");
+        const connection = mongoose.connection;
         connection.once("open", () => {
-            console.log(`Database Connected Successfully.`);
+            logger.info("Database Connected");
         });
+        connection.on("error", console.error.bind(console, "Connection Error"));
     }
     catch (e: any) {
         logger.error(e.message);

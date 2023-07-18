@@ -17,7 +17,7 @@ class AuthService {
                 email,
                 password,
             })
-            const token = await generateToken(newUser._id);
+            const token = `Bearer ${await generateToken(newUser._id)}`
             res.status(201).json({
                 success: true,
                 message: "User Register Successfully",
@@ -32,10 +32,10 @@ class AuthService {
         if (!req.body || (!email || !password)) return next(new ErrorHandler("All fields Required", 400));
 
         try {
-            const user = await User.findOne({ email: email });
+            const user = await User.findOne({ email });
             if (!user) return next(new ErrorHandler("Email Or Password Incorrect", 400));
             if (user.verifyPassword(password)) {
-                const token = await generateToken(user._id);
+                const token = `Bearer ${await generateToken(user._id)}`
                 res.json({
                     success: true,
                     message: "Login Successfully",
