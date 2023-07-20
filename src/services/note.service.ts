@@ -157,11 +157,11 @@ export class NoteService {
                 });
             }
 
-            const totalItem: number = await Note.find({ $text: { $search: s } }).countDocuments();
+            const totalItem: number = await Note.find({ $text: { $search: s }, isPublic: true }).countDocuments();
             console.log(`totalItem is ${totalItem}`);
             const totalPage: number = Math.ceil(totalItem / limit);
 
-            const notes = await Note.find({ $text: { $search: s } })
+            const notes = await Note.find({ $text: { $search: s }, isPublic: true })
                 .populate('user', 'username') // Assuming you want to populate the 'user' field with the 'username' property only
                 .skip((page - 1) * limit)
                 .limit(limit);
